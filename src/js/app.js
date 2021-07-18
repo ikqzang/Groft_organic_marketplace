@@ -53,7 +53,9 @@ App = {
     bindEvents: function() {
         $(document).on('click', '#durainbuy', App.buydurian);
         $(document).on('click', '#coconutbuy', App.buycoconut);
-        $(document).on('click', '#pomelobuy', App.buypomelo);        
+        $(document).on('click', '#pomelobuy', App.buypomelo);
+        $(document).on('click', '#setstockbutton', App.setstock);      
+        $(document).on('click', '#setbalancebutton', App.setbalance); 
     },
   
     buydurian: function() {
@@ -154,22 +156,21 @@ buypomelo: function() {
   var account = web3.eth.accounts[0];
   var ShopInstance;
 
-  App.contracts.Shop.deployed().then(function (instance) {     // get GoldWinner
+  App.contracts.Shop.deployed().then(function (instance) {    
     ShopInstance = instance;
 
   return ShopInstance.getpomelostock.call();}).then(function (pomelostock)
   {
-     
+
       if (pomelostock > 0) {
         var ShopInstance;
-          
+
         App.contracts.Shop.deployed().then(function (instance) {     
             ShopInstance = instance;
 
-        return ShopInstance.buyPomelo(account,fullname,tel,location,{from: account});
+        return ShopInstance.buyPomelo(account,fullname,tel,location,{from: account, gas: 100000});
         }).then(function (result)
         {
-            
           alert("ส้มโอสำเร็จ");
             
         }).catch(function (err) {
@@ -192,7 +193,22 @@ buypomelo: function() {
             var account = web3.eth.accounts[0];
             var accounts = account.slice(0,6)+'...'+account.slice(-4,account.length); // cut long address to short address
             $('#WalletAddress').text(accounts);
+
+          App.contracts.Shop.deployed().then(function (instance) {     
+              ShopInstance = instance;
+  
+          return ShopInstance.getBalance.call();
+          }).then(function (balance)
+          {
             
+            $('#WalletBalance').text(balance);
+            
+  
+            
+          }).catch(function (err) {
+              console.log(err.message);
+            });
+
           App.contracts.Shop.deployed().then(function (instance) {     
               ShopInstance = instance;
   
@@ -235,7 +251,50 @@ buypomelo: function() {
               console.log(err.message);
             });
           
-    }
+    },
+    setstock: function() {
+      
+      var durainstock = ($('#durianset').val());
+      var coconutstock = $('#coconutset').val();
+      var pomelostock = $('#pomeloset').val();
+      alert("การอัพเดท stock จำนวน "+durainstock +' '+ coconutstock+ ' ' +  pomelostock +" การอัพเดทสำเร็จ");
+      var account = web3.eth.accounts[0];
+      var ShopInstance;
+    
+      App.contracts.Shop.deployed().then(function (instance) {     
+        ShopInstance = instance;
+
+      return ShopInstance.setstock(durainstock,coconutstock,pomelostock,{from: account, gas: 100000});
+      }).then(function (result)
+      {
+      alert("การอัพเดทสำเร็จ");
+        
+      }).catch(function (err) {
+        console.log(err.message);
+      });
+  
+      },
+      
+          
+    setbalance: function() {
+      alert("การอัพเดทเริ่มต้น");
+      var userbalance = $('#balanceset').val();
+      var ShopInstance;
+      var account = web3.eth.accounts[0];
+      App.contracts.Shop.deployed().then(function (instance) {     
+        ShopInstance = instance;
+
+      return ShopInstance.setbalance(account,userbalance,{from: account, gas: 100000});
+      }).then(function (result)
+      {
+        
+      alert("การอัพเดทสำเร็จ");
+        
+      }).catch(function (err) {
+          console.log(err.message);
+      });
+      }
+  
 };
 
   $(function() {
